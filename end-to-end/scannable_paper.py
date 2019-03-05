@@ -5,7 +5,7 @@ from barcode_scanner import decoder
 import pandas as pd
 import omr
 import ocr
-
+import os
 
 def rectify(h):
     h = h.reshape((4,2))
@@ -72,14 +72,15 @@ def outerRectangle(image):
     cv2.waitKey(0)
     return dst
 
-
+names = []
+answers= []
+questions = []
 
 def innerRectangles(dst):
 
     gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
 
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
-    #cv2.imshow("blurred", blurred)
 
     # apply Canny Edge Detection
     edged = cv2.Canny(blurred, 0, 50)
@@ -91,54 +92,55 @@ def innerRectangles(dst):
     for c in contours:
         p = cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, 0.02 * p, True)
-        #print("Area:",cv2.contourArea(approx))
         
         if len(approx) == 4 and cv2.contourArea(approx) >4000: #parameter which needs to be tuned for separate area size
 
-            # print(cv2.contourArea(approx) == cv2.contourArea(contours))
-            #print("Area:",cv2.contourArea(approx))
+            print("Area:",cv2.contourArea(approx))
             targetvec.append(approx)
-
-    #cv2.drawContours(dst, targetvec, -1, (0, 255, 0), 2)
-    #cv2.imshow("image",dst)
-    #cv2.waitKey(0)
-
+   
     point_list = []
     for c in targetvec:
         x1, y1, width1, height1 = cv2.boundingRect(c)
         point_list.append([x1,y1,width1,height1])
-        #print("x, y , height, width .... {} {} {} {}",x1,y1,width1,height1)
 
     #filter necessary so that the big outer contour is not detected
     point_array = [point for point in point_list if point[0] > 10]
-
-    #print(point_array)
     duplicate_array = []
     same_pt = []
-    point_array = sorted(point_array,key=lambda x: (x[1],x[0]))
-
-    #Actual Points
-    #for i in point_array:
-        #print ("P:",i)
-
-    #Duplicate point indices encountered are maintained in the list
+    point_array = sorted(point_array,key=lambda x: (x[1]))
+    for i in point_array:
+        print ("Point Array :",i)
+        
     for i in range(len(point_array)):
         for j in range(i+1,len(point_array)):
             #nearby contour points to remove
-            if point_array[i][0]+ 10 > point_array[j][0] and point_array[i][1]+ 10 > point_array[j][1] and point_array[i][2]+ 10 > point_array[j][2] and point_array[i][3]+ 10 > point_array[j][3] :
-                #print("T:",point_array[i],point_array[j])
+            if point_array[i][1]+ 10 > point_array[j][1]:
+                point_array[j][1] = point_array[i][1]
+
+
+    point_array = sorted(point_array,key=lambda x: (x[1],x[0]))
+
+    for i in range(len(point_array)):
+        for j in range(i+1,len(point_array)):
+            if point_array[i][0]+ 10 > point_array[j][0] and  point_array[i][1]+ 10 > point_array[j][1] and point_array[i][2]+ 10 > point_array[j][2] and point_array[i][3]+ 10 > point_array[j][3] :
                 duplicate_array.append(j)
 
     #deleting from reverse based on index to avoid out of index issue 
     duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
     print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
     #print(duplicate_array)
+    for i in duplicate_array:
+        print ("Deleted",i)
 
     for i in duplicate_array:
         del point_array[i]
 
     for i in point_array:
-        print ("Final:",i)
+        x, y, width, height = i[0],i[1],i[2],[3]
+
+    meandiff = [abs(p[2]-p[3]) for p in point_array if p[2]*p[3]<=9000  ]
+    print(np.mean(meandiff))
+    print(np.std(meandiff))
 
     for i  in range(0,len(point_array)):
 
@@ -148,12 +150,43 @@ def innerRectangles(dst):
         roi = dst[y+3:y+height-3, x+5:x+width-5]
         #cv2.rectangle(dst,(x,y),(x+width,y+height),(0,255,0),1)
         #print(roi.shape)
-        #cv2.imshow("ROI",roi)
-        #cv2.waitKey(0)
-        cv2.imwrite("roi"+str(i+1)+".png", roi)
-        #cv2.destroyAllWindows()
+        print("height - width {}".format(abs(height-width)))      
+
+        area = height * width 
+        if height+30  >=width:
+            continue
+        print("final area :: ", area)      
+        cv2.imshow("ROI",roi)
+        cv2.waitKey(0)
+        os.path.join('.')
+       
+
+        if i==0 or i==1:
+            names.append(roi)
+
+        elif i>1 and area >5000 and area<9000:
+            answers.append(roi)
+
+        else:
+           questions.append(roi)
+    for i in range(len(names)):
+        if not os.path.isdir('name'):
+            os.makedirs('name')            
+        cv2.imwrite(os.path.join("name","name" + str(i+1)+".png"), names[i]) 
+
+    for i in range(len(answers)):
+        if not os.path.isdir('answers'):
+            os.makedirs('answers')             
+        cv2.imwrite(os.path.join("answers","answers" + str(i+1)+".png"), answers[i]) 
+
+    for i in range(len(questions)):     
+        if not os.path.isdir('questions'):
+            os.makedirs('questions')
+        cv2.imwrite(os.path.join("questions","questions" + str(i+1)+".png"), questions[i])
 
     return len(point_array)
+
+                
 
 
 if __name__ == "__main__":
@@ -165,9 +198,9 @@ if __name__ == "__main__":
 
     '''
 
-    image = cv2.imread('test_multi.jpg') 
+    image = cv2.imread('final_sheet_4.jpg') 
     dst = outerRectangle(image)
-
+   
 
     '''
 
@@ -214,25 +247,21 @@ if __name__ == "__main__":
     '''
 
     responses = []
-    q_types = ["ocr","rough","omr","rough","omr","rough","ocr","rough","ocr"]
+    q_types = ["ocr","ocr","ocr","omr","omr"]
 
 
-    for i in range(regions_detected):
-        q_img = "roi"+str(i+1)+".png"
+    for i in range(len(answers)):
+        q_img = "answers"+str(i+1)+".png"
         if q_types[i] == "omr":
-            img = cv2.imread(q_img)
+            img = cv2.imread(os.path.join('answers',q_img))
+            cv2.imshow("image",img)
+            cv2.waitKey(0) 
             responses.append(omr.evaluateQuestion(img))
 
         if q_types[i] =="ocr":
-            img = cv2.imread(q_img)
+            img = cv2.imread(os.path.join('./answers',q_img))
+            cv2.imshow("image",img)
+            cv2.waitKey(0)
             responses.append(ocr.evaluateQuestion(img))
 
     print(responses)
-
-
-
-
-
-
-
-
