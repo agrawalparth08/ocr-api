@@ -51,7 +51,7 @@ def getBlob(im):
 	#for i in range(len(keypoint_sorted)):
 		#print(keypoint_sorted[i])
 	cv2.imshow("Keypoints", im_with_keypoints)
-	# cv2.imwrite("partial_OMR_detected.jpg",im_with_keypoints)
+	cv2.imwrite("partial_OMR_detected.jpg",im_with_keypoints)
 	cv2.waitKey(0)
 
 	return keypoint_sorted
@@ -84,7 +84,7 @@ def getCircles(image):
 			#cv2.rectangle(output, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
 		# show the output image
-		cv2.imshow("output", np.hstack([image, output]))
+		cv2.imshow("output", np.hstack([output]))
 		cv2.waitKey(0)
 
 	#sort by x coord because we will get row_count in metadata
@@ -100,39 +100,39 @@ def evaluateQuestion(image,row_count=2,x_response = ["A","B","C","D"],y_response
 	#image = cv2.imread("roi5.png")
 
 	#get all circles
-	point_list = getCircles(image)
+	# print("shape of OMR: ", image.shape)
+	# point_list = getCircles(image)
 
-	#setting the x-y range based on circles
-	x_range = []
-	y_range = sorted([point_list[i][1] for i in range(row_count)])
+	# #setting the x-y range based on circles
+	# x_range = []
+	# y_range = sorted([point_list[i][1] for i in range(row_count)])
 
-	print(y_range)
-	for i in range(0,len(point_list),row_count):
-		row_group = point_list[i:i+row_count]
+	# print(y_range)
+	# for i in range(0,len(point_list),row_count):
+	# 	row_group = point_list[i:i+row_count]
 
-		x_range.append(min([row[0] for row in row_group ]))
-	print(x_range)
+	# 	x_range.append(min([row[0] for row in row_group ]))
+	# print(x_range)
+
+	x_range = [60,110,160,210]
 
 	#Detecting blob points
 	blob_points = getBlob(image)
-	#print (blob_points)
+	print ("blob_points ", blob_points)
 
-	#final response list
+	# #final response list
 	responses = []
 
-	for i in range(len(blob_points)):
-		x = blob_points[i][0]
-		y = blob_points[i][1]
-		d_y = np.asarray([abs(pointy - y) for pointy in y_range])
-		d_x = np.asarray([abs(pointx -x) for pointx in x_range])
-		x_cord = np.argmin(d_x)
-		y_cord = np.argmin(d_y)
-
-
-		#print(x_cord,y_cord)
-		print(x_response[x_cord],y_response[y_cord])
-		responses.append([x_response[x_cord],y_response[y_cord]])
+	for point in blob_points: 
+		print(point) 
+		found = False 
+		for i in range(len(x_range)): 
+			if int(point[0]) < x_range[i]: 
+				responses.append(i + 1)
+				#print(responses) 
+				found = True 
+			if found:break
 		
-	#print("Final responses")
-	#print(responses)
+	print("Final responses")
+	print(responses)
 	return responses

@@ -22,7 +22,7 @@ def evaluateQuestion(image):
 	#image = cv2.imread("response_2.jpg")
 	gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
-	thresh = 127
+	thresh = 100
 	im_bw = cv2.threshold(gray,thresh,255,cv2.THRESH_BINARY)[1]  
 	cv2.imwrite("im_bw.jpg",im_bw)
 	height,width = im_bw.shape

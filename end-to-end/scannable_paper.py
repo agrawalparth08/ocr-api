@@ -138,9 +138,7 @@ def innerRectangles(dst):
     for i in point_array:
         x, y, width, height = i[0],i[1],i[2],[3]
 
-    meandiff = [abs(p[2]-p[3]) for p in point_array if p[2]*p[3]<=9000  ]
-    print(np.mean(meandiff))
-    print(np.std(meandiff))
+
 
     for i  in range(0,len(point_array)):
 
@@ -246,22 +244,36 @@ if __name__ == "__main__":
 
     '''
 
+    
     responses = []
-    q_types = ["ocr","ocr","ocr","omr","omr"]
+    q_types = ["ocr","ocr", "ocr", "omr","omr"]
+    idx_char_omr = { 1 : "A", 2 : "B", 3 : "C", 4: "D"}
 
+    if not len(answers) == len(q_types):
+       print("Not able to detect properly")
+       exit(0)
 
     for i in range(len(answers)):
-        q_img = "answers"+str(i+1)+".png"
-        if q_types[i] == "omr":
-            img = cv2.imread(os.path.join('answers',q_img))
-            cv2.imshow("image",img)
-            cv2.waitKey(0) 
-            responses.append(omr.evaluateQuestion(img))
+       q_img = "answers"+str(i+1)+".png"
+       if q_types[i] == "omr":
+           img = cv2.imread(os.path.join('./answers',q_img))
+           cv2.imshow("image",img)
+           cv2.waitKey(0) 
+           detected_omr_ans = omr.evaluateQuestion(img);
+           responses.append(idx_char_omr[detected_omr_ans[0] ] )
 
-        if q_types[i] =="ocr":
-            img = cv2.imread(os.path.join('./answers',q_img))
-            cv2.imshow("image",img)
-            cv2.waitKey(0)
-            responses.append(ocr.evaluateQuestion(img))
+       if q_types[i] =="ocr":
+           img = cv2.imread(os.path.join('./answers',q_img))
+           cv2.imshow("image",img)
+           cv2.waitKey(0)
+           responses.append(ocr.evaluateQuestion(img))
 
     print(responses)
+
+
+
+
+
+
+
+
