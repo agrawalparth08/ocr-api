@@ -15,7 +15,7 @@ import json
 from flask import Flask, render_template, request
 from flask_uploads import UploadSet, configure_uploads, IMAGES
 # initialize our Flask application and the Keras model
-
+import base64
 photos = UploadSet('photos', IMAGES)
 app = flask.Flask(__name__)
 
@@ -41,21 +41,17 @@ def load_model():
 	model = loaded_model
 	model._make_predict_function()
 
-def ocr_prediction(filename):
-	print(filename)
+def ocr_prediction(image):
 	characters =        ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 	
-	image = cv2.imread("static/"+filename)
+	#image = cv2.imread("static/"+filename)
 	gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 	thresh = 100
 	im_bw = cv2.threshold(gray,thresh,255,cv2.THRESH_BINARY)[1]  
-	cv2.imwrite("im_bw.jpg",im_bw)
 	height,width = im_bw.shape
 	im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
 
-	cv2.imshow("Binary Image",im_bw)
-	cv2.waitKey(0)
-
+	
 	ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
 	im2,ctrs,hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -128,9 +124,12 @@ def predict():
 	data = {"success": False}
 
 	# ensure an image was properly uploaded to our endpoint
-	if flask.request.method == "POST" and 'photo' in request.files:
-			filename = photos.save(request.files['photo'])
-			data["predictions"] = ocr_prediction(filename)
+	if flask.request.method == "POST":
+			print('image data : ',request.values.get('photo'))
+			imgdata =base64.b64decode(request.values.get('photo'));
+			image = stringToRGB(request.values.get('photo'))
+			
+			data["predictions"] = ocr_prediction(image)
 			print(data["predictions"])
 
 			# indicate that the request was a success
@@ -141,6 +140,10 @@ def predict():
 
 # if this is the main thread of execution first load the model and
 # then start the server
+def stringToRGB(base64_string):
+    imgdata = base64.b64decode(str(base64_string))
+    image = Image.open(io.BytesIO(imgdata))
+    return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
 if __name__ == "__main__":
 	print(("* Loading Keras model and Flask starting server..."
 		"please wait until server has fully started"))
