@@ -48,7 +48,7 @@ def ocr_prediction(filename):
     image = cv2.imread("static/"+filename)
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
-    thresh = 100
+    thresh = 127
     im_bw = cv2.threshold(gray,thresh,255,cv2.THRESH_BINARY)[1]
 
     height,width = im_bw.shape

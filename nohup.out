@@ -1,0 +1,44 @@
+2019-03-08 18:11:37.898685: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+* Loading Keras model and Flask starting server...please wait until server has fully started
+ * Serving Flask app "htr_app" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+/home/parth/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+Using TensorFlow backend.
+ * Running on http://0.0.0.0:10000/ (Press CTRL+C to quit)
+192.168.86.41 - - [08/Mar/2019 18:12:38] "[37mPOST /predict HTTP/1.1[0m" 200 -
+OpenCV(3.4.1) Error: Assertion failed (ssize.width > 0 && ssize.height > 0) in resize, file /io/opencv/modules/imgproc/src/resize.cpp, line 4044
+[2019-03-08 18:13:27,316] ERROR in app: Exception on /predict [POST]
+Traceback (most recent call last):
+  File "/home/parth/anaconda3/lib/python3.6/site-packages/flask/app.py", line 2292, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/parth/anaconda3/lib/python3.6/site-packages/flask/app.py", line 1815, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/parth/anaconda3/lib/python3.6/site-packages/flask/app.py", line 1718, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/home/parth/anaconda3/lib/python3.6/site-packages/flask/_compat.py", line 35, in reraise
+    raise value
+  File "/home/parth/anaconda3/lib/python3.6/site-packages/flask/app.py", line 1813, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/parth/anaconda3/lib/python3.6/site-packages/flask/app.py", line 1799, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "htr_app.py", line 113, in predict
+    data["predictions"] = ocr_prediction(filename)
+  File "htr_app.py", line 74, in ocr_prediction
+    roi = cv2.resize(roi,dsize = (28,28), interpolation = cv2.INTER_AREA)
+cv2.error: OpenCV(3.4.1) /io/opencv/modules/imgproc/src/resize.cpp:4044: error: (-215) ssize.width > 0 && ssize.height > 0 in function resize
+
+192.168.86.41 - - [08/Mar/2019 18:13:27] "[1m[35mPOST /predict HTTP/1.1[0m" 500 -
+192.168.86.41 - - [08/Mar/2019 18:14:18] "[37mPOST /predict HTTP/1.1[0m" 200 -
+192.168.86.41 - - [11/Mar/2019 11:15:11] "[37mPOST /predict HTTP/1.1[0m" 200 -
+127.0.0.1 - - [11/Mar/2019 11:23:43] "[37mPOST /predict HTTP/1.1[0m" 200 -
+answers1.png
+answers3.png
+['3', '4', '5']
+answers3_1.png
+['3', '4', '5']
+answers3_2.png
+['3', '4', '5']
