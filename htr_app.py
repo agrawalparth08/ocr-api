@@ -57,7 +57,7 @@ def ocr_prediction(filename):
     
     ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
-    im2,ctrs,hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    im2,ctrs = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
     m = list()
     sorted_ctrs = sorted(ctrs, key = lambda ctr: cv2.boundingRect(ctr)[0])
