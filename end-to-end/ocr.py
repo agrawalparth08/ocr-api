@@ -40,8 +40,7 @@ def evaluateQuestion(image):
 			print("Area:",cv2.contourArea(approx))
 			targetvec.append(approx)
 	#cv2.drawContours(image,targetvec, -1,(0,255,0),1)
-	cv2.imshow("gray",image)
-	cv2.waitKey(0)
+	
 	m = list()
 	
    
@@ -98,8 +97,7 @@ def evaluateQuestion(image):
 			cv2.rectangle(image,(x,y),(x+width,y+height),(0,255,0),1)
 			#print(roi.shape)
 			print("height - width {}".format(abs(height-width)))   
-			cv2.imshow('roi'+str(i),roi)
-			cv2.waitKey(0)   
+			  
 			roilist.append(roi)
 			
 			
@@ -130,17 +128,12 @@ def evaluateQuestion(image):
 		smooth = cv2.addWeighted(blur,1.5,im_bw,-0.5,0)
 		im_bw = cv2.threshold(smooth,170,255,cv2.THRESH_BINARY)[1] 
 
-		cv2.imshow("smooth",smooth)
-		cv2.waitKey(0) 
-
-		cv2.imshow("roi",roi)
-		cv2.waitKey(0) 
+		
 		cv2.imwrite("im_bw.jpg",im_bw)
 		height,width = im_bw.shape
 		im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
 
-		cv2.imshow("Binary Image",im_bw)
-		cv2.waitKey(0)
+		
 
 		ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
@@ -181,8 +174,7 @@ def evaluateQuestion(image):
 					#roi = cv2.erode(roi,kernel,iterations = 1)
 					
 					#roi = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
-					cv2.imshow("roi inside",roi)
-					cv2.waitKey(0)
+					
 
 					roi = np.array(roi)
 					t = np.copy(roi)

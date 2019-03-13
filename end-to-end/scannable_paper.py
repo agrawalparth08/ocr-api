@@ -178,7 +178,7 @@ def innerRectangles(dst):
         cv2.imwrite(os.path.join("answers","answers" + str(i+1)+".png"), answers[i]) 
 
     for i in range(len(questions)):     
-        if not os.path.isdir('questions'):
+        if not os.path.isdir('questions'):  
             os.makedirs('questions')
         cv2.imwrite(os.path.join("questions","questions" + str(i+1)+".png"), questions[i])
 
