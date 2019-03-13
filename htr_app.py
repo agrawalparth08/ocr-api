@@ -306,4 +306,4 @@ if __name__ == "__main__":
 	print(("* Loading Keras model and Flask starting server..."
 		"please wait until server has fully started"))
 	load_model()
-	app.run(host="0.0.0.0", port=10000)
+	app.run(host="0.0.0.0", port=9999)
