@@ -96,7 +96,7 @@ def innerRectangles(dst):
         if len(approx) == 4 and cv2.contourArea(approx) >4000: #parameter which needs to be tuned for separate area size
 
             print("Area:",cv2.contourArea(approx))
-            targetvec.append(approx)
+            targetvec.append(approx)    
    
     point_list = []
     for c in targetvec:
@@ -117,7 +117,7 @@ def innerRectangles(dst):
             if point_array[i][1]+ 10 > point_array[j][1]:
                 point_array[j][1] = point_array[i][1]
 
-
+     
     point_array = sorted(point_array,key=lambda x: (x[1],x[0]))
 
     for i in range(len(point_array)):
@@ -126,7 +126,7 @@ def innerRectangles(dst):
                 duplicate_array.append(j)
 
     #deleting from reverse based on index to avoid out of index issue 
-    duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
+    duplicate_array = sorted(list(set(duplicate_array)),reverse=True)  
     print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
     #print(duplicate_array)
     for i in duplicate_array:
@@ -145,7 +145,7 @@ def innerRectangles(dst):
         x, y, width, height = point_array[i][0],point_array[i][1],point_array[i][2],point_array[i][3]
         #if y < 720:
         #cropping some padding which contains box lines
-        roi = dst[y+3:y+height-3, x+5:x+width-5]
+        roi = dst[y:y+height, x:x+width]
         #cv2.rectangle(dst,(x,y),(x+width,y+height),(0,255,0),1)
         #print(roi.shape)
         print("height - width {}".format(abs(height-width)))      
@@ -161,7 +161,7 @@ def innerRectangles(dst):
 
         if i==0 or i==1:
             names.append(roi)
-
+  
         elif i>1 and area >5000 and area<9000:
             answers.append(roi)
 
@@ -185,7 +185,7 @@ def innerRectangles(dst):
     return len(point_array)
 
                 
-
+   
 
 if __name__ == "__main__":
 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
     '''
 
-    image = cv2.imread('final_sheet_4.jpg') 
+    image = cv2.imread('sample2.jpg') 
     dst = outerRectangle(image)
    
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     '''
 
     # x,y,w,h = 600,650,160,120 # will always be at the bottom of the page, coordinates need to be hardcoded
-    # crop= dst[y:h+y,x:w+x]
+    # crop= dst[y:h+y,x:w+x] 
 
     # cv2.imshow("snip - barcode",crop )
     # cv2.waitKey(0)
