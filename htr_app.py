@@ -145,7 +145,6 @@ def ocr_prediction(image):
 		
 		if len(approx) == 4 and cv2.contourArea(approx)>1000: #parameter which needs to be tuned for separate area size
 
-			print("Area:",cv2.contourArea(approx))
 			targetvec.append(approx)
 	#cv2.drawContours(image,targetvec, -1,(0,255,0),1)
 	
@@ -165,8 +164,8 @@ def ocr_prediction(image):
 	duplicate_array = []
 	same_pt = []
 	point_array = sorted(point_array,key=lambda x: (x[1]))
-	for i in point_array:
-		print ("Point Array :",i)
+	# for i in point_array:
+	# 	print ("Point Array :",i)
 		
 	for i in range(len(point_array)):
 		for j in range(i+1,len(point_array)):
@@ -184,16 +183,16 @@ def ocr_prediction(image):
 
 	#deleting from reverse based on index to avoid out of index issue 
 	duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
-	print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
+	#print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
 	#print(duplicate_array)
-	for i in duplicate_array:
-		print ("Deleted",i)
+	# for i in duplicate_array:
+	# 	print ("Deleted",i)
 
 	for i in duplicate_array:
 		del point_array[i]
 
-	for i in point_array:
-		print("final points",i   )
+	# for i in point_array:
+	# 	print("final points",i   )
 	roilist = []
 	for i  in range(0,len(point_array)):
 
@@ -204,7 +203,6 @@ def ocr_prediction(image):
 			
 			cv2.rectangle(image,(x,y),(x+width,y+height),(0,255,0),1)
 			#print(roi.shape)
-			print("height - width {}".format(abs(height-width)))   
 			  
 			roilist.append(roi)
 			
@@ -227,7 +225,6 @@ def ocr_prediction(image):
 		im_bw = cv2.threshold(smooth,170,255,cv2.THRESH_BINARY)[1] 
 
 		
-		cv2.imwrite("im_bw.jpg",im_bw)
 		height,width = im_bw.shape
 		im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
 
@@ -244,7 +241,7 @@ def ocr_prediction(image):
 		dp = im_bw.copy()
 
 		x,y,w,h = cv2.boundingRect(sorted_ctrs[0])
-		print("Height, Weight, W/h, X , Y ->",h,w,float(w)/h,x,y)
+		#print("Height, Weight, W/h, X , Y ->",h,w,float(w)/h,x,y)
 		if float (w/h) < 3 and x>5 and y>10:
 			max_ctr = np.amax(sorted_ctrs,axis = 0)
 
@@ -273,11 +270,10 @@ def ocr_prediction(image):
 			"t2":[characters[prob_list[1]],prob[0][prob_list[1]]],
 			"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
 			#print(top_response)
-			print(characters[prob_list[0]])
 
 
 			responselist.append(characters[prob_list[0]])
-		print(responselist)
+	#print(responselist)
 	return(responselist)
 
 @app.route("/predict", methods=["POST"])
@@ -288,7 +284,6 @@ def predict():
 
 	# ensure an image was properly uploaded to our endpoint
 	if flask.request.method == "POST":
-			print('image data : ',request.values.get('photo'))
 			imgdata =base64.b64decode(request.values.get('photo'));
 			image = stringToRGB(request.values.get('photo'))
 			
