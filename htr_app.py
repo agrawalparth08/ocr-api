@@ -61,6 +61,7 @@ def ocr_prediction(image):
 		
 		if len(approx) == 4 and cv2.contourArea(approx)>1000: 
 			targetvec.append(approx)
+	
 	m = list()
 	
    
@@ -98,11 +99,11 @@ def ocr_prediction(image):
 	duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
 	print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
 	
-	# for i in duplicate_array:
-	# 	del point_array[i]
+	for i in duplicate_array:
+		del point_array[i]
 
-	# for i in point_array:
-	# 	print("final points",i   )
+	for i in point_array:
+		print("final points",i   )
 	roilist = []
 	for i  in range(0,len(point_array)):
 
@@ -138,8 +139,6 @@ def ocr_prediction(image):
 		height,width = im_bw.shape
 		im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
 
-		
-
 		ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
 		im2,ctrs,hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -161,7 +160,6 @@ def ocr_prediction(image):
 			roi = cv2.resize(roi,dsize = (28,28), interpolation = cv2.INTER_AREA)
 			kernel = np.ones((2,2),np.uint8)
 			
-
 			roi = np.array(roi)
 			t = np.copy(roi)
 			t = t /255.0
@@ -190,7 +188,6 @@ def predict():
 	# ensure an image was properly uploaded to our endpoint
 	if flask.request.method == "POST":
 			image = stringToRGB(request.values.get('photo'))
-		
 			data["predictions"] = ocr_prediction(image)
 			print(data["predictions"])
 
