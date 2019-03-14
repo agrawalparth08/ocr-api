@@ -174,18 +174,18 @@ def innerRectangles(dst):
 
     for i in range(len(answers)):
         if not os.path.isdir('answers'):
-            os.makedirs('answers')             
+            os.makedirs('answers')              
         cv2.imwrite(os.path.join("answers","answers" + str(i+1)+".png"), answers[i]) 
 
     for i in range(len(questions)):     
-        if not os.path.isdir('questions'):  
+        if not os.path.isdir('questions'):
             os.makedirs('questions')
         cv2.imwrite(os.path.join("questions","questions" + str(i+1)+".png"), questions[i])
 
     return len(point_array)
 
                 
-   
+      
 
 if __name__ == "__main__":
 

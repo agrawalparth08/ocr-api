@@ -35,7 +35,7 @@ def evaluateQuestion(image):
 		p = cv2.arcLength(c, True)
 		approx = cv2.approxPolyDP(c, 0.02 * p, True)
 		
-		if len(approx) == 4 and cv2.contourArea(approx)>1000: #parameter which needs to be tuned for separate area size
+		if len(approx) == 4 and cv2.contourArea(approx)>1000 and cv2.contourArea(approx) <2000: #parameter which needs to be tuned for separate area size
 
 			print("Area:",cv2.contourArea(approx))
 			targetvec.append(approx)
@@ -116,13 +116,29 @@ def evaluateQuestion(image):
 	#image = cv2.imread("response_2.jpg")
 	responselist = []
 	for roi in roilist:
-		thresh = 170
+		thresh = 170    
 		kernel = np.ones((2,2),np.uint8)
-
+		kernel1 = np.ones((1,1),np.uint8)
+		cv2.imshow("roi1", roi)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
 		roi = cv2.morphologyEx(roi, cv2.MORPH_OPEN, kernel)
+		cv2.imshow("roi2", roi)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
 		gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-		im_bw = cv2.threshold(gray,thresh,255,cv2.THRESH_BINARY)[1] 
+		im_bw = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv2.THRESH_BINARY,11,4)
+
+		#cv2.threshold(gray,thresh,255,cv2.THRESH_BINARY)[1] 
+		cv2.imshow("im_bw", im_bw)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+		# cv2.imshow("imdilate", imdilate)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
 		im_bw = cv2.morphologyEx(im_bw, cv2.MORPH_OPEN, kernel)
+
 		im_bw = cv2.erode(im_bw,kernel,iterations=1)
 		blur = cv2.GaussianBlur(im_bw,(1,1),5)
 		smooth = cv2.addWeighted(blur,1.5,im_bw,-0.5,0)
@@ -138,9 +154,13 @@ def evaluateQuestion(image):
 		ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
 		im2,ctrs,hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
+		
 		m = list()
 		sorted_ctrs = sorted(ctrs, key = lambda ctr: cv2.boundingRect(ctr)[0])
+		cv2.drawContours(image, sorted_ctrs,-1,(0,255,0),1)
+		cv2.imshow("contour",image)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
 		pchl = list()
 
 		dp = im_bw.copy()
@@ -200,7 +220,7 @@ def evaluateQuestion(image):
 	return(responselist)
 	
 
-#print(evaluateQuestion(cv2.imread("sample1.png")))
+print(evaluateQuestion(cv2.imread("image.png")))
 
 
-
+ 
