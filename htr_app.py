@@ -217,9 +217,7 @@ def predict():
 	# ensure an image was properly uploaded to our endpoint
 	if flask.request.method == "POST":
 			image = stringToRGB(request.values.get('photo'))
-			cv2.imshow("image",image)
-			cv2.waitKey(0)
-			cv2.destroyAllWindows()
+			
 			data["predictions"] = ocr_prediction(image)
 			print(data["predictions"])
 
