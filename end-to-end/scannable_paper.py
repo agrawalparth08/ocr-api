@@ -61,7 +61,7 @@ def outerRectangle(image):
             target = approx
             break
 
-    # mapping target points to 800x800 quadrilateral
+    # mapping target points to 800x800 quadrilateral  
     approx = rectify(target)
     pts2 = np.float32([[0,0],[800,0],[800,800],[0,800]])
 
@@ -107,7 +107,7 @@ def innerRectangles(dst):
     point_array = [point for point in point_list if point[0] > 10]
     duplicate_array = []
     same_pt = []
-    point_array = sorted(point_array,key=lambda x: (x[1]))
+    point_array = sorted(point_array,key=lambda x: (x[1]))   
     for i in point_array:
         print ("Point Array :",i)
         
@@ -154,10 +154,9 @@ def innerRectangles(dst):
         if height+30  >=width:
             continue
         print("final area :: ", area)      
-        cv2.imshow("ROI",roi)
-        cv2.waitKey(0)
-        os.path.join('.')
        
+        os.path.join('.')
+                               
 
         if i==0 or i==1:
             names.append(roi)
@@ -169,9 +168,9 @@ def innerRectangles(dst):
            questions.append(roi)
     for i in range(len(names)):
         if not os.path.isdir('name'):
-            os.makedirs('name')            
+            os.makedirs('name')                 
         cv2.imwrite(os.path.join("name","name" + str(i+1)+".png"), names[i]) 
-
+    
     for i in range(len(answers)):
         if not os.path.isdir('answers'):
             os.makedirs('answers')              
@@ -196,9 +195,9 @@ if __name__ == "__main__":
 
     '''
 
-    image = cv2.imread('sample2.jpg') 
+    image = cv2.imread('final_sheet6.jpg') 
     dst = outerRectangle(image)
-   
+   #final_sheet6.jpg
 
     '''
 
@@ -257,15 +256,13 @@ if __name__ == "__main__":
        q_img = "answers"+str(i+1)+".png"
        if q_types[i] == "omr":
            img = cv2.imread(os.path.join('./answers',q_img))
-           cv2.imshow("image",img)
-           cv2.waitKey(0) 
+           
            detected_omr_ans = omr.evaluateQuestion(img);
            responses.append(idx_char_omr[detected_omr_ans[0] ] )
 
        if q_types[i] =="ocr":
            img = cv2.imread(os.path.join('./answers',q_img))
-           cv2.imshow("image",img)
-           cv2.waitKey(0)
+          
            responses.append(ocr.evaluateQuestion(img))
 
     print(responses)

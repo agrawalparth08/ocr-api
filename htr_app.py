@@ -49,7 +49,7 @@ def ocr_prediction(image):
 	# apply Canny Edge Detection
 	edged = cv2.Canny(blurred, 0, 50)
 
-	(_,contours,_) = cv2.findContours(edged, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+	(_,contours,_) = cv2.findContours(edged, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 	contours = sorted(contours, key=cv2.contourArea, reverse=True)
 	
 
@@ -59,8 +59,11 @@ def ocr_prediction(image):
 		p = cv2.arcLength(c, True)
 		approx = cv2.approxPolyDP(c, 0.02 * p, True)
 		
-		if len(approx) == 4 and cv2.contourArea(approx)>1000: 
+		if len(approx) == 4 and cv2.contourArea(approx)>1000 and cv2.contourArea(approx) <2000: #parameter which needs to be tuned for separate area size
+
+			print("Area:",cv2.contourArea(approx))
 			targetvec.append(approx)
+	#cv2.drawContours(image,targetvec, -1,(0,255,0),1)
 	
 	m = list()
 	
@@ -98,13 +101,17 @@ def ocr_prediction(image):
 	#deleting from reverse based on index to avoid out of index issue 
 	duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
 	print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
-	
+	#print(duplicate_array)
+	for i in duplicate_array:
+		print ("Deleted",i)
+
 	for i in duplicate_array:
 		del point_array[i]
 
 	for i in point_array:
 		print("final points",i   )
 	roilist = []
+	  
 	for i  in range(0,len(point_array)):
 
 			x, y, width, height = point_array[i][0],point_array[i][1],point_array[i][2],point_array[i][3]
@@ -113,7 +120,7 @@ def ocr_prediction(image):
 			roi = image[y+2:y+height-1, x+3:x+width-3]
 			
 			cv2.rectangle(image,(x,y),(x+width,y+height),(0,255,0),1)
-			
+		
 			roilist.append(roi)
 			
 			
@@ -121,62 +128,84 @@ def ocr_prediction(image):
 
 	responselist = []
 	for roi in roilist:
-		thresh = 170
-		kernel = np.ones((2,2),np.uint8)
-		
-		roi = cv2.morphologyEx(roi, cv2.MORPH_OPEN, kernel)
+		thresh = 170    
+		kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(2,2))
+
 		gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+		
+		# cv2.imshow("dst", dst)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
 		im_bw = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv2.THRESH_BINARY,11,4)
+            cv2.THRESH_BINARY,51,12)
 
-		im_bw = cv2.morphologyEx(im_bw, cv2.MORPH_OPEN, kernel)
-		im_bw = cv2.erode(im_bw,kernel,iterations=1)
-		blur = cv2.GaussianBlur(im_bw,(1,1),5)
-		smooth = cv2.addWeighted(blur,1.5,im_bw,-0.5,0)
-		im_bw = cv2.threshold(smooth,170,255,cv2.THRESH_BINARY)[1] 
 
 		
+		im_bw = cv2.erode(im_bw, kernel, iterations=1)
+		
+		_,im_bw = cv2.threshold(im_bw, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+	
+		cv2.imwrite("im_bw.jpg",im_bw)
 		height,width = im_bw.shape
 		im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
+
+		
 
 		ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
 		im2,ctrs,hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-
+		
 		m = list()
 		sorted_ctrs = sorted(ctrs, key = lambda ctr: cv2.boundingRect(ctr)[0])
+		
+		
 		pchl = list()
 
 		dp = im_bw.copy()
 
-		x,y,w,h = cv2.boundingRect(sorted_ctrs[0])
-		print("Height, Weight, W/h, X , Y ->",h,w,float(w)/h,x,y)
-		if float (w/h) < 3 and x>5 and y>10:
-			max_ctr = np.amax(sorted_ctrs,axis = 0)
+		old_point_x = 0
+		old_point_y = 0
 
-			roi = im_bw[y-10:y+h+10, x-5:x+w+10]
+		for i,ctr in enumerate(sorted_ctrs):
+			x,y,w,h = cv2.boundingRect(ctr)
+			
+			print("Height, Weight, W/h, X , Y ->",h,w,float(w)/h,x,y)
 		
 			
-			roi = cv2.resize(roi,dsize = (28,28), interpolation = cv2.INTER_AREA)
-			kernel = np.ones((2,2),np.uint8)
-			
-			roi = np.array(roi)
-			t = np.copy(roi)
-			t = t /255.0
-			t = 1 - t
-			t = t.reshape(1,784)
-			
+			if float (w/h) < 3 and x>5 and y>10:
+				print("Contour:",(np.amax(ctr,axis = 0)))
+				max_ctr = np.amax(ctr,axis = 0)
 
-			prob = model.predict_proba(t)
-			prob_list = prob[0].argsort()[-3:][::-1]
+				if max_ctr[0][0] > (old_point_x + 20): #for characters detected too close
 
-			top_response = {
-			"t1":[characters[prob_list[0]],prob[0][prob_list[0]]],
-			"t2":[characters[prob_list[1]],prob[0][prob_list[1]]],
-			"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
+					old_point_x = max_ctr[0][0]
+					old_point_y = max_ctr[0][1]
+					roi = im_bw[y-10:y+h+10, x-5:x+w+10]
+				
+					
+					roi = cv2.resize(roi,dsize = (28,28), interpolation = cv2.INTER_AREA)
+					kernel = np.ones((2,2),np.uint8)
+
+					
+					roi = np.array(roi)
+					t = np.copy(roi)
+					t = t /255.0
+					t = 1 - t
+					t = t.reshape(1,784)
+					
+
+					prob = model.predict_proba(t)
+					prob_list = prob[0].argsort()[-3:][::-1]
+
+					top_response = {
+					"t1":[characters[prob_list[0]],prob[0][prob_list[0]]],
+					"t2":[characters[prob_list[1]],prob[0][prob_list[1]]],
+					"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
+					#print(top_response)
+					print(characters[prob_list[0]],characters[prob_list[1]])
 
 
-			responselist.append(characters[prob_list[0]])
+					responselist.append(characters[prob_list[0]])
 	return(responselist)
 
 @app.route("/predict", methods=["POST"])
@@ -188,6 +217,9 @@ def predict():
 	# ensure an image was properly uploaded to our endpoint
 	if flask.request.method == "POST":
 			image = stringToRGB(request.values.get('photo'))
+			cv2.imshow("image",image)
+			cv2.waitKey(0)
+			cv2.destroyAllWindows()
 			data["predictions"] = ocr_prediction(image)
 			print(data["predictions"])
 

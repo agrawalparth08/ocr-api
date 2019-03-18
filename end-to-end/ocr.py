@@ -87,6 +87,8 @@ def evaluateQuestion(image):
 	for i in point_array:
 		print("final points",i   )
 	roilist = []
+	 # if not os.path.isdir('rois'):
+	 # 	 os.makedirs('rois') 
 	for i  in range(0,len(point_array)):
 
 			x, y, width, height = point_array[i][0],point_array[i][1],point_array[i][2],point_array[i][3]
@@ -96,8 +98,8 @@ def evaluateQuestion(image):
 			
 			cv2.rectangle(image,(x,y),(x+width,y+height),(0,255,0),1)
 			#print(roi.shape)
-			print("height - width {}".format(abs(height-width)))   
-			  
+			# print("height - width {}".format(abs(height-width)))   
+   #      	cv2.imwrite("imbw.png"), roi) 
 			roilist.append(roi)
 			
 			
@@ -117,34 +119,48 @@ def evaluateQuestion(image):
 	responselist = []
 	for roi in roilist:
 		thresh = 170    
-		kernel = np.ones((2,2),np.uint8)
-		kernel1 = np.ones((1,1),np.uint8)
+		kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(2,2))
+
+		kernel1 = np.ones((3,3),np.uint8)
 		cv2.imshow("roi1", roi)
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
-		roi = cv2.morphologyEx(roi, cv2.MORPH_OPEN, kernel)
-		cv2.imshow("roi2", roi)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
 		gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+		
+		# cv2.imshow("dst", dst)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
 		im_bw = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv2.THRESH_BINARY,11,4)
+            cv2.THRESH_BINARY,51,12)
 
-		#cv2.threshold(gray,thresh,255,cv2.THRESH_BINARY)[1] 
-		cv2.imshow("im_bw", im_bw)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
+
+		#_,im_bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+		
+
+		#bn_im_bw_cl = cv2.morphologyEx(bn_im_bw, cv2.MORPH_CLOSE, kernel,iterations=2)
+		
 		# cv2.imshow("imdilate", imdilate)
 		# cv2.waitKey(0)
 		# cv2.destroyAllWindows()
-		im_bw = cv2.morphologyEx(im_bw, cv2.MORPH_OPEN, kernel)
-
-		im_bw = cv2.erode(im_bw,kernel,iterations=1)
-		blur = cv2.GaussianBlur(im_bw,(1,1),5)
-		smooth = cv2.addWeighted(blur,1.5,im_bw,-0.5,0)
-		im_bw = cv2.threshold(smooth,170,255,cv2.THRESH_BINARY)[1] 
-
+		# cv2.imshow("im_bw1", im_bw)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
 		
+		# kernels = np.ones((1,5), np.uint8)  # note this is a horizontal kernel
+		# e_im = cv2.erode(im_bw, kernels, iterations=1)
+		# d_im = cv2.dilate(e_im, kernels, iterations=1)
+		
+		im_bw = cv2.erode(im_bw, kernel, iterations=1)
+		# blur = cv2.GaussianBlur(gray,(3,3),0)
+		# smooth = cv2.addWeighted(blur,1.5,gray,-0.5,0)
+		# cv2.imshow("smooth",smooth)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
+		_,im_bw = cv2.threshold(im_bw, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+		cv2.imshow("im_bw2",im_bw)
+		cv2.waitKey(0)
+		cv2.destroyAllWindows()
+		 
 		cv2.imwrite("im_bw.jpg",im_bw)
 		height,width = im_bw.shape
 		im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
@@ -157,10 +173,8 @@ def evaluateQuestion(image):
 		
 		m = list()
 		sorted_ctrs = sorted(ctrs, key = lambda ctr: cv2.boundingRect(ctr)[0])
-		cv2.drawContours(image, sorted_ctrs,-1,(0,255,0),1)
-		cv2.imshow("contour",image)
-		cv2.waitKey(0)
-		cv2.destroyAllWindows()
+		
+		
 		pchl = list()
 
 		dp = im_bw.copy()
@@ -191,10 +205,13 @@ def evaluateQuestion(image):
 					
 					roi = cv2.resize(roi,dsize = (28,28), interpolation = cv2.INTER_AREA)
 					kernel = np.ones((2,2),np.uint8)
+
 					#roi = cv2.erode(roi,kernel,iterations = 1)
 					
 					#roi = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
-					
+					cv2.imshow("roi2", roi)
+					cv2.waitKey(0)
+					cv2.destroyAllWindows()
 
 					roi = np.array(roi)
 					t = np.copy(roi)
@@ -211,7 +228,7 @@ def evaluateQuestion(image):
 					"t2":[characters[prob_list[1]],prob[0][prob_list[1]]],
 					"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
 					#print(top_response)
-					print(characters[prob_list[0]])
+					print(characters[prob_list[0]],characters[prob_list[1]])
 
 
 					response.append(characters[prob_list[0]])
@@ -220,7 +237,7 @@ def evaluateQuestion(image):
 	return(responselist)
 	
 
-print(evaluateQuestion(cv2.imread("image.png")))
+#print(evaluateQuestion(cv2.imread("image.png")))
 
 
  
