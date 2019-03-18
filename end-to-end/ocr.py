@@ -126,36 +126,13 @@ def evaluateQuestion(image):
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
 		gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-		
-		# cv2.imshow("dst", dst)
-		# cv2.waitKey(0)
-		# cv2.destroyAllWindows()
+
 		im_bw = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
             cv2.THRESH_BINARY,51,12)
 
-
-		#_,im_bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-		
-
-		#bn_im_bw_cl = cv2.morphologyEx(bn_im_bw, cv2.MORPH_CLOSE, kernel,iterations=2)
-		
-		# cv2.imshow("imdilate", imdilate)
-		# cv2.waitKey(0)
-		# cv2.destroyAllWindows()
-		# cv2.imshow("im_bw1", im_bw)
-		# cv2.waitKey(0)
-		# cv2.destroyAllWindows()
-		
-		# kernels = np.ones((1,5), np.uint8)  # note this is a horizontal kernel
-		# e_im = cv2.erode(im_bw, kernels, iterations=1)
-		# d_im = cv2.dilate(e_im, kernels, iterations=1)
 		
 		im_bw = cv2.erode(im_bw, kernel, iterations=1)
-		# blur = cv2.GaussianBlur(gray,(3,3),0)
-		# smooth = cv2.addWeighted(blur,1.5,gray,-0.5,0)
-		# cv2.imshow("smooth",smooth)
-		# cv2.waitKey(0)
-		# cv2.destroyAllWindows()
+		
 		_,im_bw = cv2.threshold(im_bw, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 		cv2.imshow("im_bw2",im_bw)
 		cv2.waitKey(0)
