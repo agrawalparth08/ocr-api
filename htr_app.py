@@ -31,12 +31,12 @@ def load_model():
 	# pre-trained on ImageNet and provided by Keras, but you can
 	# substitute in your own networks just as easily)
 	global model
-	json_file = open("model.json","r")
+	json_file = open("model_final.json","r")
 	loaded_model_json = json_file.read()
 	json_file.close()
 	loaded_model = model_from_json(loaded_model_json)
 
-	loaded_model.load_weights("model.h5")
+	loaded_model.load_weights("model_final.h5")
 
 	model = loaded_model
 	model._make_predict_function()
@@ -63,7 +63,6 @@ def ocr_prediction(image):
 
 			print("Area:",cv2.contourArea(approx))
 			targetvec.append(approx)
-	#cv2.drawContours(image,targetvec, -1,(0,255,0),1)
 	
 	m = list()
 	
@@ -124,7 +123,7 @@ def ocr_prediction(image):
 			roilist.append(roi)
 			
 			
-	characters = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+	characters = ['0','1','2','3','4','5','6','7','8','9']
 
 	responselist = []
 	for roi in roilist:
@@ -132,6 +131,7 @@ def ocr_prediction(image):
 		kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(2,2))
 
 		gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+		
 	
 		im_bw = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
             cv2.THRESH_BINARY,51,12)
@@ -147,7 +147,6 @@ def ocr_prediction(image):
 		im_bw = cv2.resize(im_bw,dsize = (width*5,height*4),interpolation = cv2.INTER_CUBIC)
 
 		
-
 		ret,thresh = cv2.threshold(im_bw,127,255,cv2.THRESH_BINARY_INV)
 
 		im2,ctrs,hier = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -184,18 +183,19 @@ def ocr_prediction(image):
 				t = t.reshape(1,784)
 				
 
-				prob = model.predict_proba(t)
-				prob_list = prob[0].argsort()[-3:][::-1]
+				prob = model.predict_classes(t)
+				#prob_list = prob[0].argsort()[-3:][::-1]
 
-				top_response = {
-				"t1":[characters[prob_list[0]],prob[0][prob_list[0]]],
-				"t2":[characters[prob_list[1]],prob[0][prob_list[1]]],
-				"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
+				print(prob[0])
+				#top_response = {
+				#"t1":[characters[prob_list[0]],prob[0][prob_list[0]]],
+				#"t2":[characters[prob_list[1]],prob[0][prob_list[1]]],
+				#"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
 				#print(top_response)
-				print(characters[prob_list[0]],characters[prob_list[1]])
+				#print(characters[prob[0]],characters[prob_list[1]])
 
 
-				responselist.append(characters[prob_list[0]])
+				responselist.append(characters[prob[0]])
 	return(responselist)
 
 @app.route("/predict", methods=["POST"])
