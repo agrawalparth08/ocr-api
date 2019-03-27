@@ -211,7 +211,7 @@ def getResponseFromImage(input_image):
 		#qpts_data = pd.read_csv("question_data.csv")
 
 		regions_detected = innerRectangles(dst)
-	 	print("Detected regions :",regions_detected)
+		print("Detected regions :",regions_detected)
 		
 		responses = []
 		q_types = ["ocr","ocr", "ocr", "omr","omr"]
