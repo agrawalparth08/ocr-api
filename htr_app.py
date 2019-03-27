@@ -15,7 +15,7 @@ from sys import argv
 import json
 from flask import Flask, render_template, request
 from flask_uploads import UploadSet, configure_uploads, IMAGES
-from scannable_paper import getResponseFromImage
+from scannable_paper import getResponseFromImage, evaluateOmrQuestion
 # initialize our Flask application and the Keras model
 import base64
 photos = UploadSet('photos', IMAGES)
@@ -128,7 +128,7 @@ def ocr_prediction(image):
 			
 	characters = ['0','1','2','3','4','5','6','7','8','9']
 
-	responselist = []
+	responselist = ""
 	for roi in roilist:
 		thresh = 170    
 		kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(2,2))
@@ -193,7 +193,7 @@ def ocr_prediction(image):
 			#"t3":[characters[prob_list[2]],prob[0][prob_list[2]]]}
 			#print(top_response)
 			print(characters[prob_list[0]],characters[prob_list[1]]," probs:: ",prob[0][prob_list[0]],prob[0][prob_list[1]])
-			responselist.append(characters[prob_list[0]])
+			responselist += characters[prob_list[0]]
 	return(responselist)
 
 @app.route("/predict", methods=["POST"])
@@ -203,27 +203,32 @@ def predict():
 	data = {"success": False}
 	responses = []
 	q_types = ["ocr","ocr", "ocr", "omr","omr"]
+	idx_char_omr = { 1 : "A", 2 : "B", 3 : "C", 4: "D"}
 
 	# ensure an image was properly uploaded to our endpoint
 	if flask.request.method == "POST" and 'photo' in request.files:
 			filename = photos.save(request.files['photo'])
-			answers= getResponseFromImage(filename)
-			for i in range(len(answers)):
-				q_img = "answers"+str(i+1)+".png"
-				# if q_types[i] == "omr":
-				#     img = cv2.imread(os.path.join('./answers',q_img)) 
-				#     detected_omr_ans = evaluateOmrQuestion(img);
-				#     responses.append(idx_char_omr[detected_omr_ans[0] ] )
+			success , answers= getResponseFromImage(filename)
+			if success == True:
+				for i in range(len(answers)):
+					q_img = "answers"+str(i+1)+".png"
+					if q_types[i] == "omr":
+					    img = cv2.imread(os.path.join('./answers',q_img)) 
+					    detected_omr_ans = evaluateOmrQuestion(img);
+					    responses.append(idx_char_omr[detected_omr_ans[0] ] )
 
-				if q_types[i] =="ocr":
-					img = cv2.imread(os.path.join('./answers',q_img))
-					responses.append(ocr_prediction(img))
+					if q_types[i] =="ocr":
+						img = cv2.imread(os.path.join('./answers',q_img))
+						responses.append(ocr_prediction(img))
 
-			data["predictions"] = responses
+				data["predictions"] = responses
 
-			# indicate that the request was a success
-			data["success"] = True
-
+				# indicate that the request was a success
+				data["success"] = True
+				print(data)
+			else :
+				data["message"] = "Not able to detect regions properly"
+				print(data)
 	# return the data dictionary as a JSON response
 	return flask.jsonify(data)
 

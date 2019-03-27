@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pandas as pd
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
 from keras.models import model_from_json
@@ -24,8 +25,7 @@ def rectify(h):
 
 
 def outerRectangle(image):
-
-
+	 
 
 		height, width, channels = image.shape
 		if width > height:
@@ -34,7 +34,7 @@ def outerRectangle(image):
 
 		# resize image so it can be processed
 		image = cv2.resize(image, (1600, 1200))  
-
+		
 		# creating copy of original image
 		orig = image.copy()
 
@@ -45,11 +45,11 @@ def outerRectangle(image):
 		#blurred = cv2.medianBlur(gray, 5)
 
 		# apply Canny Edge Detection
-		th,im_bw = cv2.threshold(blurred , 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-		edged = cv2.Canny(blurred, th*0.1, th)
-
-		
-
+	
+		edged = cv2.Canny(blurred, 0,50)
+		# cv2.imshow("edged", edged)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
 		orig_edged = edged.copy()
  
 		# find the contours in the edged image, keeping only the
@@ -66,14 +66,7 @@ def outerRectangle(image):
 						target = approx
 						break
 
-
 		
-
-
-		# cv2.drawContours(orig, contours, -1, (0,255,0), 3)
-		# cv2.imshow("draw",orig)
-		# cv2.waitKey(0)
-
 		# mapping target points to 800x800 quadrilateral
 		approx = rectify(target)
 		pts2 = np.float32([[0,0],[800,0],[800,800],[0,800]])
@@ -82,14 +75,18 @@ def outerRectangle(image):
 
 		dst = cv2.warpPerspective(orig,M,(800,800))
 		
+		# cv2.imshow("dst", dst)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
+		
 		return dst
 
-names = []
-answers= []
-questions = []
 
 def innerRectangles(dst):
-
+		names = []
+		answers= []
+		questions = []
+		
 		gray = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
 
 		blurred = cv2.GaussianBlur(gray, (3, 3), 0)
@@ -107,7 +104,7 @@ def innerRectangles(dst):
 				
 				if len(approx) == 4 and cv2.contourArea(approx) >4000: #parameter which needs to be tuned for separate area size
 
-						#print("Area:",cv2.contourArea(approx))
+						print("Area:",cv2.contourArea(approx))
 						targetvec.append(approx)
 	 
 		point_list = []
@@ -120,7 +117,9 @@ def innerRectangles(dst):
 		duplicate_array = []
 		same_pt = []
 		point_array = sorted(point_array,key=lambda x: (x[1]))
-		
+		for i in point_array:
+				print ("Point Array :",i)
+				
 		for i in range(len(point_array)):
 				for j in range(i+1,len(point_array)):
 						#nearby contour points to remove
@@ -136,16 +135,16 @@ def innerRectangles(dst):
 								duplicate_array.append(j)
 
 
-		# print("final size is : ", len(point_array))
+		print("final size is : ", len(point_array))
 
-		# print("duplicate_array size is : ", len(duplicate_array))
+		print("duplicate_array size is : ", len(duplicate_array))
 
 		#deleting from reverse based on index to avoid out of index issue 
 		duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
-		# print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
-		# #print(duplicate_array)
-		# for i in duplicate_array:
-		#     print ("Deleted",i)
+		print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
+		#print(duplicate_array)
+		for i in duplicate_array:
+				print ("Deleted",i)
 
 		for i in duplicate_array:
 				del point_array[i]
@@ -163,12 +162,12 @@ def innerRectangles(dst):
 				roi = dst[y:y+height, x:x+width]
 				#cv2.rectangle(dst,(x,y),(x+width,y+height),(0,255,0),1)
 				#print(roi.shape)
-			 # print("height - width {}".format(abs(height-width)))      
+				print("height - width {}".format(abs(height-width)))      
 
 				area = height * width 
 				if height+30  >=width:
 						continue
-				#print("final area :: ", area)      
+				print("final area :: ", area)      
 				
 				os.path.join('.')       
 
@@ -196,20 +195,20 @@ def innerRectangles(dst):
 						os.makedirs('questions')
 				cv2.imwrite(os.path.join("questions","questions" + str(i+1)+".png"), questions[i])
 
-		return len(point_array) 
+		return len(point_array), answers 
 
 								
 
 
 
 def getResponseFromImage(input_image):
-	 
+		success = False
 		image = cv2.imread("static/" + input_image)
 		dst = outerRectangle(image)
 
 		#qpts_data = pd.read_csv("question_data.csv")
 
-		regions_detected = innerRectangles(dst)
+		regions_detected, answers = innerRectangles(dst)
 		print("Detected regions :",regions_detected)
 		
 		responses = []
@@ -218,10 +217,10 @@ def getResponseFromImage(input_image):
 
 		if not len(answers) == len(q_types):
 			 print("Not able to detect properly")
-			 exit(0)
+			 return False, answers
 
-		#print(answers)
-		return answers
+		print(answers)
+		return True, answers
 
 
 
@@ -336,7 +335,7 @@ def evaluateOmrQuestion(image,row_count=2,x_response = ["A","B","C","D"],y_respo
 
 		#Detecting blob points
 		blob_points = getBlob(image)
-		#print ("blob_points ", blob_points)
+		print ("blob_points ", blob_points)
 
 		# #final response list
 		responses = []
