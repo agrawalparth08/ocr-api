@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from keras.preprocessing.image import img_to_array
 from keras.models import load_model
@@ -12,11 +11,9 @@ import os
 
 def rectify(h):
     h = h.reshape((4,2))
-    print (h)
     hnew = np.zeros((4,2),dtype = np.float32)
 
     add = h.sum(1)
-    print (add)
     hnew[0] = h[np.argmin(add)]
     hnew[2] = h[np.argmax(add)]
 
@@ -112,7 +109,7 @@ def innerRectangles(dst):
         
         if len(approx) == 4 and cv2.contourArea(approx) >4000: #parameter which needs to be tuned for separate area size
 
-            print("Area:",cv2.contourArea(approx))
+            #print("Area:",cv2.contourArea(approx))
             targetvec.append(approx)
    
     point_list = []
@@ -126,7 +123,7 @@ def innerRectangles(dst):
     same_pt = []
     point_array = sorted(point_array,key=lambda x: (x[1]))
     for i in point_array:
-        print ("Point Array :",i)
+        #print ("Point Array :",i)
         
     for i in range(len(point_array)):
         for j in range(i+1,len(point_array)):
@@ -143,16 +140,16 @@ def innerRectangles(dst):
                 duplicate_array.append(j)
 
 
-    print("final size is : ", len(point_array))
+    # print("final size is : ", len(point_array))
 
-    print("duplicate_array size is : ", len(duplicate_array))
+    # print("duplicate_array size is : ", len(duplicate_array))
 
     #deleting from reverse based on index to avoid out of index issue 
     duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
-    print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
-    #print(duplicate_array)
-    for i in duplicate_array:
-        print ("Deleted",i)
+    # print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
+    # #print(duplicate_array)
+    # for i in duplicate_array:
+    #     print ("Deleted",i)
 
     for i in duplicate_array:
         del point_array[i]
@@ -170,12 +167,12 @@ def innerRectangles(dst):
         roi = dst[y:y+height, x:x+width]
         #cv2.rectangle(dst,(x,y),(x+width,y+height),(0,255,0),1)
         #print(roi.shape)
-        print("height - width {}".format(abs(height-width)))      
+       # print("height - width {}".format(abs(height-width)))      
 
         area = height * width 
         if height+30  >=width:
             continue
-        print("final area :: ", area)      
+        #print("final area :: ", area)      
         
         os.path.join('.')       
 
@@ -217,7 +214,7 @@ def getResponseFromImage(input_image):
     #qpts_data = pd.read_csv("question_data.csv")
 
     regions_detected = innerRectangles(dst)
-    print("Detected regions :",regions_detected)
+   print("Detected regions :",regions_detected)
     
     responses = []
     q_types = ["ocr","ocr", "ocr", "omr","omr"]
@@ -227,7 +224,7 @@ def getResponseFromImage(input_image):
        print("Not able to detect properly")
        exit(0)
 
-    print(answers)
+    #print(answers)
     return answers
 
 
@@ -343,7 +340,7 @@ def evaluateOmrQuestion(image,row_count=2,x_response = ["A","B","C","D"],y_respo
 
     #Detecting blob points
     blob_points = getBlob(image)
-    print ("blob_points ", blob_points)
+    #print ("blob_points ", blob_points)
 
     # #final response list
     responses = []

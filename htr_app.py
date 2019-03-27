@@ -66,7 +66,7 @@ def ocr_prediction(image):
         
         if len(approx) == 4 and cv2.contourArea(approx)>1000 and cv2.contourArea(approx) <2000: #parameter which needs to be tuned for separate area size
 
-            print("Area:",cv2.contourArea(approx))
+            #print("Area:",cv2.contourArea(approx))
             targetvec.append(approx)
     
     m = list()
@@ -86,7 +86,7 @@ def ocr_prediction(image):
     same_pt = []
     point_array = sorted(point_array,key=lambda x: (x[1]))
     for i in point_array:
-        print ("Point Array :",i)
+        #print ("Point Array :",i)
         
     for i in range(len(point_array)):
         for j in range(i+1,len(point_array)):
@@ -104,16 +104,16 @@ def ocr_prediction(image):
 
     #deleting from reverse based on index to avoid out of index issue 
     duplicate_array = sorted(list(set(duplicate_array)),reverse=True)
-    print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
-    #print(duplicate_array)
-    for i in duplicate_array:
-        print ("Deleted",i)
+    # print("Points detected:",len(point_array),"Duplicate Points to be removed:",len(list(set(duplicate_array))))
+    # #print(duplicate_array)
+    # for i in duplicate_array:
+    #     print ("Deleted",i)
 
     for i in duplicate_array:
         del point_array[i]
 
     for i in point_array:
-        print("final points",i   )
+       # print("final points",i   )
     roilist = []
       
     for i  in range(0,len(point_array)):
@@ -169,7 +169,7 @@ def ocr_prediction(image):
         for i,ctr in enumerate(sorted_ctrs):
             x,y,w,h = cv2.boundingRect(ctr)
             
-            print("Height, Weight, W/h, X , Y ->",h,w,float(w)/h,x,y)
+            #print("Height, Weight, W/h, X , Y ->",h,w,float(w)/h,x,y)
         
             
             if float (w/h) < 3 and x>5 and y>10:
