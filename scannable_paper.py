@@ -27,7 +27,6 @@ def rectify(h):
 def outerRectangle(image):
 
 
-		
 
 		height, width, channels = image.shape
 		if width > height:
@@ -122,9 +121,7 @@ def innerRectangles(dst):
 		duplicate_array = []
 		same_pt = []
 		point_array = sorted(point_array,key=lambda x: (x[1]))
-		for i in point_array:
-				#print ("Point Array :",i)
-				
+		
 		for i in range(len(point_array)):
 				for j in range(i+1,len(point_array)):
 						#nearby contour points to remove
@@ -214,7 +211,7 @@ def getResponseFromImage(input_image):
 		#qpts_data = pd.read_csv("question_data.csv")
 
 		regions_detected = innerRectangles(dst)
-	 print("Detected regions :",regions_detected)
+	 	print("Detected regions :",regions_detected)
 		
 		responses = []
 		q_types = ["ocr","ocr", "ocr", "omr","omr"]
